@@ -1,0 +1,6 @@
+# Private or bulky local files; this repo is public.
+creatives/
+Output/
+CLAUDE.md
+AGENTS.md
+.DS_Store
