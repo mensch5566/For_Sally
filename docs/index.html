@@ -40,7 +40,9 @@
   const CUTOFF = new Date('2026-11-19T00:00:00+08:00').getTime();
   const stage = document.getElementById('stage');
 
-  if (Date.now() >= CUTOFF) {
+  // ?preview=404 shows the after-cutoff card early (it can never bring the video back).
+  const preview404 = new URLSearchParams(location.search).get('preview') === '404';
+  if (preview404 || Date.now() >= CUTOFF) {
     const img = document.createElement('img');
     img.className = 'gone-card';
     img.src = '404.jpg';
