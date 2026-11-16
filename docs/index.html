@@ -9,7 +9,6 @@
   /* Opens straight onto Lulu's golden-thread video until the cutoff; after it, only the 404 card. */
   :root {
     --night: #050404;
-    --gold-dim: rgba(233, 200, 121, 0.75);
     color-scheme: dark;
   }
   * { box-sizing: border-box; }
@@ -31,20 +30,6 @@
     object-fit: contain;
     background: var(--night); display: block;
   }
-  .sound-hint {
-    position: absolute;
-    left: 0; right: 0;
-    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-    margin: 0;
-    text-align: center;
-    font: 14px/1.4 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
-    letter-spacing: 0.12em;
-    color: var(--gold-dim);
-    pointer-events: none;
-    transition: opacity 0.6s ease;
-  }
-  .sound-hint.gone { opacity: 0; }
-  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
@@ -72,37 +57,19 @@
     film.preload = 'auto';
     stage.appendChild(film);
 
-    const hint = document.createElement('p');
-    hint.className = 'sound-hint';
-    hint.textContent = '輕觸畫面開啟聲音';
-    hint.hidden = true;
-    stage.appendChild(hint);
-
-    const hideHint = () => {
-      hint.classList.add('gone');
-      setTimeout(() => { hint.hidden = true; }, 700);
-    };
-
     // Try with sound first; browsers usually refuse, so fall back to muted autoplay.
     film.muted = false;
-    film.play().then(() => {
-      hint.hidden = true;
-    }).catch(() => {
+    film.play().catch(() => {
       film.muted = true;
       film.play().catch(() => {});
-      if (!film.ended) hint.hidden = false;
     });
 
-    // First tap anywhere turns the sound on.
+    // A tap anywhere quietly turns the sound on. The video stays on its last frame when it ends.
     document.addEventListener('pointerdown', () => {
       if (!film.muted) return;
       film.muted = false;
       if (film.paused && !film.ended) film.play().catch(() => {});
-      hideHint();
     }, { once: true });
-
-    // Stay on the last frame; no replay.
-    film.addEventListener('ended', () => { if (!hint.hidden) hideHint(); });
   }
 </script>
 </body>
