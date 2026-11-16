@@ -6,7 +6,7 @@
 <title>For Sally</title>
 <meta name="theme-color" content="#050404">
 <style>
-  /* Opens straight onto Lulu's golden-thread video; ends on the last frame. */
+  /* Opens straight onto Lulu's golden-thread video until the cutoff; after it, only the 404 card. */
   :root {
     --night: #050404;
     --gold-dim: rgba(233, 200, 121, 0.75);
@@ -24,10 +24,11 @@
       env(safe-area-inset-left, 0px);
     -webkit-tap-highlight-color: transparent;
   }
-  .stage { height: 100%; display: grid; place-items: center; position: relative; }
-  .film {
-    height: 100%; max-height: 100%; max-width: 100%;
-    aspect-ratio: 9 / 16; object-fit: contain;
+  .stage { height: 100%; position: relative; }
+  .film, .gone-card {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
     background: var(--night); display: block;
   }
   .sound-hint {
@@ -47,40 +48,62 @@
 </style>
 </head>
 <body>
-<main class="stage">
-  <video class="film" id="film" src="Lulu_for_Sally.mp4" autoplay muted playsinline preload="auto"></video>
-  <p class="sound-hint" id="hint" hidden>輕觸畫面開啟聲音</p>
-</main>
+<main class="stage" id="stage"></main>
 
 <script>
-  const film = document.getElementById('film');
-  const hint = document.getElementById('hint');
+  // Card is shown until the end of 2026-11-18 23:59 Taiwan time (UTC+8).
+  const CUTOFF = new Date('2026-11-19T00:00:00+08:00').getTime();
+  const stage = document.getElementById('stage');
 
-  function hideHint() {
-    hint.classList.add('gone');
-    setTimeout(() => { hint.hidden = true; }, 700);
-  }
-
-  // Try with sound first; browsers usually refuse, so fall back to muted autoplay.
-  film.muted = false;
-  film.play().then(() => {
-    hint.hidden = true;
-  }).catch(() => {
+  if (Date.now() >= CUTOFF) {
+    const img = document.createElement('img');
+    img.className = 'gone-card';
+    img.src = '404.jpg';
+    img.alt = '404';
+    stage.appendChild(img);
+  } else {
+    const film = document.createElement('video');
+    film.className = 'film';
+    film.src = 'Lulu_for_Sally.mp4';
+    film.autoplay = true;
     film.muted = true;
-    film.play().catch(() => {});
-    if (!film.ended) hint.hidden = false;
-  });
+    film.playsInline = true;
+    film.setAttribute('playsinline', '');
+    film.preload = 'auto';
+    stage.appendChild(film);
 
-  // First tap anywhere turns the sound on.
-  document.addEventListener('pointerdown', () => {
-    if (!film.muted) return;
+    const hint = document.createElement('p');
+    hint.className = 'sound-hint';
+    hint.textContent = '輕觸畫面開啟聲音';
+    hint.hidden = true;
+    stage.appendChild(hint);
+
+    const hideHint = () => {
+      hint.classList.add('gone');
+      setTimeout(() => { hint.hidden = true; }, 700);
+    };
+
+    // Try with sound first; browsers usually refuse, so fall back to muted autoplay.
     film.muted = false;
-    if (film.paused && !film.ended) film.play().catch(() => {});
-    hideHint();
-  }, { once: true });
+    film.play().then(() => {
+      hint.hidden = true;
+    }).catch(() => {
+      film.muted = true;
+      film.play().catch(() => {});
+      if (!film.ended) hint.hidden = false;
+    });
 
-  // Stay on the last frame; no replay.
-  film.addEventListener('ended', () => { if (!hint.hidden) hideHint(); });
+    // First tap anywhere turns the sound on.
+    document.addEventListener('pointerdown', () => {
+      if (!film.muted) return;
+      film.muted = false;
+      if (film.paused && !film.ended) film.play().catch(() => {});
+      hideHint();
+    }, { once: true });
+
+    // Stay on the last frame; no replay.
+    film.addEventListener('ended', () => { if (!hint.hidden) hideHint(); });
+  }
 </script>
 </body>
 </html>
