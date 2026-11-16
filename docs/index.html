@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>For Sally</title>
+<meta name="theme-color" content="#050404">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Cormorant+Garamond:wght@400;500&display=swap">
+<style>
+  /* One dark stage: a black card that opens onto Lulu's golden-thread video. */
+  :root {
+    --night: #050404;
+    --gold: #e9c879;
+    --gold-soft: #b8975a;
+    --gold-glow: rgba(233, 200, 121, 0.35);
+    --ink-dim: #8a7a5c;
+    --font-script: "Pinyon Script", "Snell Roundhand", "Apple Chancery", cursive;
+    --font-text: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--night);
+    color: var(--gold);
+    font-family: var(--font-text);
+    overflow: hidden;
+    padding:
+      env(safe-area-inset-top, 0px)
+      max(16px, env(safe-area-inset-right, 0px))
+      env(safe-area-inset-bottom, 0px)
+      max(16px, env(safe-area-inset-left, 0px));
+  }
+  .stage { height: 100%; display: grid; place-items: center; position: relative; }
+
+  .cover {
+    position: absolute; inset: 0;
+    display: grid; place-items: center; text-align: center;
+    transition: opacity 0.9s ease; z-index: 2;
+  }
+  .cover.gone { opacity: 0; pointer-events: none; }
+  .cover-inner { display: grid; gap: 28px; justify-items: center; }
+  .for {
+    font-family: var(--font-script);
+    font-weight: 400;
+    font-size: clamp(64px, 18vw, 120px);
+    line-height: 0.9;
+    margin: 0;
+    text-shadow: 0 0 18px var(--gold-glow), 0 0 2px var(--gold);
+    transform: rotate(-6deg);
+  }
+  .for span { display: block; padding-left: 0.9em; font-size: 1.25em; }
+  .open {
+    font-family: var(--font-text);
+    font-size: 17px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    background: transparent;
+    border: 1px solid var(--gold-soft);
+    border-radius: 999px;
+    padding: 12px 28px;
+    cursor: pointer;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+  .open:hover, .open:focus-visible {
+    background: rgba(233, 200, 121, 0.08);
+    box-shadow: 0 0 22px var(--gold-glow);
+    outline: none;
+  }
+  .hint { font-size: 14px; color: var(--ink-dim); letter-spacing: 0.08em; margin: 0; }
+
+  .film {
+    height: 100%; max-height: 100%; max-width: 100%;
+    aspect-ratio: 9 / 16; object-fit: contain;
+    background: var(--night);
+    opacity: 0; transition: opacity 1.2s ease; display: block;
+  }
+  .film.on { opacity: 1; }
+
+  .again {
+    position: absolute;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    left: 50%; transform: translateX(-50%);
+    z-index: 3; font-size: 15px; padding: 10px 22px;
+    background: rgba(5, 4, 4, 0.7);
+  }
+  [hidden] { display: none !important; }
+
+  @media (prefers-reduced-motion: reduce) { .cover, .film { transition: none; } }
+</style>
+</head>
+<body>
+<main class="stage">
+  <video class="film" id="film" src="Lulu_for_Sally.mp4" playsinline preload="auto"></video>
+
+  <div class="cover" id="cover">
+    <div class="cover-inner">
+      <h1 class="for">For<span>Sally</span></h1>
+      <button class="open" id="open" type="button">輕觸打開</button>
+      <p class="hint">開啟聲音，效果更好</p>
+    </div>
+  </div>
+
+  <button class="open again" id="again" type="button" hidden>再看一次</button>
+</main>
+
+<script>
+  const film = document.getElementById('film');
+  const cover = document.getElementById('cover');
+  const openBtn = document.getElementById('open');
+  const again = document.getElementById('again');
+
+  function play() {
+    again.hidden = true;
+    film.currentTime = 0;
+    film.muted = false;
+    const p = film.play();
+    if (p && p.catch) {
+      p.catch(() => { film.muted = true; film.play().catch(() => {}); });
+    }
+    film.classList.add('on');
+  }
+
+  openBtn.addEventListener('click', () => { cover.classList.add('gone'); play(); });
+  again.addEventListener('click', play);
+  film.addEventListener('ended', () => { again.hidden = false; });
+</script>
+</body>
+</html>
